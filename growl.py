@@ -53,7 +53,7 @@ class _RequestHandler(DatagramRequestHandler):
 
 if __name__ == "__main__":
 	r = GrowlListener(password,password)
-try:
-	r.serve_forever()
-except KeyboardInterrupt:
-	r.server_close()
+	try:
+		r.serve_forever()
+	except KeyboardInterrupt:
+		r.server_close()
