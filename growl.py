@@ -30,15 +30,15 @@ class GrowlListener(UDPServer):
 
 class _RequestHandler(DatagramRequestHandler):
 	dialogtimeout = '5'
-	kdialogpath = '/usr/bin/xbmc-send'
-	icon='http://growl.info/images/growlicons/HardwareGrowler_128.png'
+	growlpath = '/usr/bin/xbmc-send'
+	icon='growl.png'
 
 	def handle(self):
 		p = GrowlPacket(self.rfile.read(), self.server.inpassword,self.server.outpassword)
 		if p.type() == 'NOTIFY':
 			notification,title,description,app = p.info()
 			gtext = app + '\n' + notification + ': ' + description
-			call([self.kdialogpath, '-a "Notification(', title, ',', gtext, ',', self.dialogtimeout, ',', self.icon])
+			call([self.growlpath, '-a "Notification(%s,%s,%s,%s)"' % (title, gtext, self.dialogtimeout, self.icon)])
 
 if __name__ == "__main__":
 	r = GrowlListener(password,password)
