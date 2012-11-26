@@ -9,12 +9,13 @@ from subprocess import call
 from regrowl import GrowlPacket
 from netgrowl import *
 from SocketServer import *
+from xbmc.xbmcclient import *
 
 password="openelec"
 
 class GrowlListener(UDPServer):
 # Hostname/IP to listen on. No automatic detection.
-	hostname = '0.0.0.0'
+	hostname = '192.168.1.3'
 	allow_reuse_address = True
 
 	def __init__(self, inpassword = None, outpassword = None):
@@ -38,18 +39,16 @@ class _RequestHandler(DatagramRequestHandler):
 		if p.type() == 'NOTIFY':
 			notification,title,description,app = p.info()
 			gtext = app + '\n' + notification + ': ' + description
-			def notifyXbmc(action):
-				    ip = "localhost"
-				    port = 9777
-				    addr = (ip, port)
-				    sock = socket(AF_INET,SOCK_DGRAM)
-				    packet = PacketACTION(actionmessage=action, actiontype=ACTION_BUTTON)
-				    packet.send(sock, addr)
+			action = 'Notification(%s,%s,%s,%s)' % (title, gtext, self.dialogtimeout, self.icon)
+			self.notifyXbmc(action)
 
-			#action="title, gtext, self.dialogtimeout, self.icon"
-			action = "Notification(title, gtext, self.dialogtimeout, self.icon)"
-			notifyXbmc(action)
-
+    	def notifyXbmc(self, action):
+		ip = "localhost"
+		port = 9777
+		addr = (ip, port)
+		sock = socket(AF_INET,SOCK_DGRAM)
+		packet = PacketACTION(actionmessage=action, actiontype=ACTION_BUTTON)
+		packet.send(sock, addr)
 
 if __name__ == "__main__":
 	r = GrowlListener(password,password)
