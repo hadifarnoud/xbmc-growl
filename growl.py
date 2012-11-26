@@ -38,7 +38,18 @@ class _RequestHandler(DatagramRequestHandler):
 		if p.type() == 'NOTIFY':
 			notification,title,description,app = p.info()
 			gtext = app + '\n' + notification + ': ' + description
-			call([self.growlpath, '-a "Notification(%s,%s,%s,%s)"' % (title, gtext, self.dialogtimeout, self.icon)])
+			def notifyXbmc(action):
+				    ip = "localhost"
+				    port = 9777
+				    addr = (ip, port)
+				    sock = socket(AF_INET,SOCK_DGRAM)
+				    packet = PacketACTION(actionmessage=action, actiontype=ACTION_BUTTON)
+				    packet.send(sock, addr)
+
+			#action="title, gtext, self.dialogtimeout, self.icon"
+			action = "Notification(title, gtext, self.dialogtimeout, self.icon)"
+			notifyXbmc(action)
+
 
 if __name__ == "__main__":
 	r = GrowlListener(password,password)
