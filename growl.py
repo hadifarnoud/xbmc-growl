@@ -6,7 +6,7 @@ __copyright__ = "(C) 2011 Jim Pingle, original code (C) 2006 Rui Carmo. Code und
 
 import sys, os
 from subprocess import call
-from regrowl import GrowlPacket
+from regrowl-server import *
 from netgrowl import *
 from SocketServer import *
 from xbmc.xbmcclient import *
@@ -29,18 +29,58 @@ class GrowlListener(UDPServer):
 	# end def
 # end class
 
-class _RequestHandler(DatagramRequestHandler):
+class GNTPHandler(SocketServer.StreamRequestHandler):
 	dialogtimeout = '5'
 	growlpath = '/usr/bin/xbmc-send'
 	icon='growl.png'
 
+#	def handle(self):
+#		p = GrowlPacket(self.rfile.read(), self.server.inpassword,self.server.outpassword)
+#		if p.type() == 'NOTIFY':
+#			notification,title,description,app = p.info()
+#			gtext = app + '\n' + notification + ': ' + description
+#			action = 'Notification(%s,%s,%s,%s)' % (title, gtext, self.dialogtimeout, self.icon)
+#			self.notifyXbmc(action)
+
+	def read(self):
+		bufferLength = 2048
+		buffer = ''
+		while(1):
+			data = self.request.recv(bufferLength)
+			logging.getLogger('Server').debug('Reading %s Bytes',len(data))
+			buffer = buffer + data
+			if len(data) < bufferLength and buffer.endswith('\r\n\r\n'):
+				break
+		logging.getLogger('Server').debug(buffer)
+		return buffer
 	def handle(self):
-		p = GrowlPacket(self.rfile.read(), self.server.inpassword,self.server.outpassword)
-		if p.type() == 'NOTIFY':
-			notification,title,description,app = p.info()
-			gtext = app + '\n' + notification + ': ' + description
-			action = 'Notification(%s,%s,%s,%s)' % (title, gtext, self.dialogtimeout, self.icon)
-			self.notifyXbmc(action)
+		logger = logging.getLogger('Server')
+		reload(gntp)
+		self.data = self.read()
+		try:
+			message = gntp.parse_gntp(self.data,self.server.options.password)
+		
+			response = gntp.GNTPOK(action=message.info['messagetype'])
+			if message.info['messagetype'] == 'NOTICE':
+				response.add_header('Notification-ID','')
+			elif message.info['messagetype'] == 'SUBSCRIBE':
+				raise gntp.UnsupportedError()
+				#response.add_header('Subscription-TTL','10')
+			self.write(response.encode())
+		except gntp.BaseError, e:
+			logger.exception('GNTP Error')
+			if e.gntp_error:
+				self.write(e.gntp_error())
+		except:
+			logger.exception('Unknown Error')
+			error = gntp.GNTPError(errorcode=500,errordesc='Unknown server error')
+			self.write(error.encode())
+			raise
+	
+		message.send()
+
+
+
 
     	def notifyXbmc(self, action):
 		ip = "localhost"

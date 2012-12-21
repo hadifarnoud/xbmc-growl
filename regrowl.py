@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+# depricated! will be removed soon!!!
 """Growl 0.6 Network Protocol Relay"""
 __version__ = "0.6.2" # Initial digits will always match Growl version
 __author__ = "Rui Carmo (http://the.taoofmac.com)"
