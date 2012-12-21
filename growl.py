@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-__version__ = "0.1"
-__author__ = "Jim Pingle (http://pingle.org)"
-__copyright__ = "(C) 2011 Jim Pingle, original code (C) 2006 Rui Carmo. Code under BSD License."
+__version__ = "0.2"
+__author__ = "Hadi Farnoud (http://hadifarnoud.com)"
+__copyright__ = "(C) 2012 Hadi Farnoud. Original code (C) 2006 Rui Carmo. modified by Jim Pingle 2011. Code under BSD License."
 
 import sys, os
 from subprocess import call
-from regrowl-server import *
+from regrowl import *
 from netgrowl import *
 from SocketServer import *
 from xbmc.xbmcclient import *
